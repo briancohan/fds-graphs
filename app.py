@@ -116,6 +116,14 @@ def display_progress(start: float, cur: float, end: float) -> None:
     st.progress(progress)
 
 
+def display_hrr(hrr_df: pd.DataFrame) -> None:
+    if hrr_df.empty:
+        st.write("Upload CHID_hrr.csv to see HRR Graph")
+        return
+    else:
+        chart(graphs.hrr_graph(hrr_df))
+
+
 def display_ctrl(ctrl_df: pd.DataFrame) -> None:
     if ctrl_df.empty:
         st.write("Upload CHID_ctrl.csv to see CTRL Timeline")
@@ -142,6 +150,7 @@ def main():
     devc_meta = parse_devc_meta(out_txt)
 
     display_progress(t_start, t_current, t_end)
+    display_hrr(hrr_df)
     display_ctrl(ctrl_df)
 
 
