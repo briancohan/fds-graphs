@@ -1,10 +1,12 @@
 import io
 from typing import Tuple
 
+import altair as alt
 import pandas as pd
 import parse
 import streamlit as st
 
+import graphs
 import ml
 
 
@@ -19,6 +21,10 @@ def read_csv(csv_file: io.StringIO) -> pd.DataFrame:
     except ValueError:
         df = pd.DataFrame()
     return df
+
+
+def chart(cht: alt.Chart) -> None:
+    st.altair_chart(cht, use_container_width=True)
 
 
 @st.cache
@@ -87,6 +93,20 @@ def parse_devc_meta(out_text: str) -> pd.DataFrame:
     return df
 
 
+@st.cache
+def get_activation_times(ctrl_df: pd.DataFrame) -> pd.DataFrame:
+    changes = (
+        ctrl_df.set_index('Time')
+        .diff()
+        .dropna()
+        .reset_index()
+        .melt(id_vars='Time', var_name='CTRL')
+    )
+    changes = changes[changes.value > 0].sort_values('Time')
+    changes['Sequence'] = range(1, len(changes) + 1)
+    return changes
+
+
 def display_progress(start: float, cur: float, end: float) -> None:
     try:
         progress = (end - cur) / (end - start)
@@ -94,6 +114,15 @@ def display_progress(start: float, cur: float, end: float) -> None:
         return
     st.write(f'{progress * 100:.1f}% Complete {cur} s / {end} s')
     st.progress(progress)
+
+
+def display_ctrl(ctrl_df: pd.DataFrame) -> None:
+    if ctrl_df.empty:
+        st.write("Upload CHID_ctrl.csv to see CTRL Timeline")
+        return
+    else:
+        changes = get_activation_times(ctrl_df)
+        chart(graphs.ctrl_graph(changes))
 
 
 def main():
@@ -113,6 +142,8 @@ def main():
     devc_meta = parse_devc_meta(out_txt)
 
     display_progress(t_start, t_current, t_end)
+    display_ctrl(ctrl_df)
+
 
 if __name__ == '__main__':
     main()
