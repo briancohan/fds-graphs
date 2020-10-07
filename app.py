@@ -87,6 +87,15 @@ def parse_devc_meta(out_text: str) -> pd.DataFrame:
     return df
 
 
+def display_progress(start: float, cur: float, end: float) -> None:
+    try:
+        progress = (end - cur) / (end - start)
+    except ZeroDivisionError:
+        return
+    st.write(f'{progress * 100:.1f}% Complete {cur} s / {end} s')
+    st.progress(progress)
+
+
 def main():
     hrr_csv = file_uploader('Upload HRR csv')
     hrr_df = read_csv(hrr_csv)
@@ -103,10 +112,7 @@ def main():
     timestep_info = parse_timesteps(out_txt)
     devc_meta = parse_devc_meta(out_txt)
 
-    st.write(t_start, t_current, t_end)
-    st.write(timestep_info)
-    st.write(devc_meta)
-
+    display_progress(t_start, t_current, t_end)
 
 if __name__ == '__main__':
     main()
