@@ -2,6 +2,16 @@ import altair as alt
 import pandas as pd
 
 
+def timesteps(df: pd.DataFrame) -> alt.Chart:
+
+    line = alt.Chart(df).mark_line().encode(
+        x=alt.X('time:Q', title='Time [sec]'),
+        y=alt.Y('size', title='Step Size [sec]')
+    )
+
+    return line
+
+
 def hrr_graph(df: pd.DataFrame) -> alt.Chart:
 
     line = alt.Chart(df).mark_line().encode(
