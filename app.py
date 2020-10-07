@@ -185,6 +185,7 @@ def display_devc(
     devc_meta: pd.DataFrame,
 ) -> None:
     if devc_df.empty:
+        st.write("Upload CHID_devc.csv to see DEVC Timelines")
         return
 
     groups = devc_groups(devc_meta)
