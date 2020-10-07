@@ -1,5 +1,5 @@
 import io
-from typing import Tuple
+from typing import List, Tuple
 
 import altair as alt
 import pandas as pd
@@ -107,6 +107,45 @@ def get_activation_times(ctrl_df: pd.DataFrame) -> pd.DataFrame:
     return changes
 
 
+@st.cache
+def devc_groups(devc_meta: pd.DataFrame):
+    id_vars = ['x', 'y', 'z', 'id', 'level']
+    group_vars = [c for c in devc_meta.columns if c not in id_vars]
+
+    groups = []
+    for vals, idxs in devc_meta.groupby(group_vars).groups.items():
+        group = dict(zip(group_vars, vals))
+        group['ids'] = devc_meta.iloc[idxs]['id'].to_list()
+        groups.append(group)
+
+    return groups
+
+
+@st.cache
+def melt_and_merge(
+    df: pd.DataFrame,
+    meta: pd.DataFrame,
+    id_vars: str='Time',
+    var_name: str='devc',
+    df_on: str='devc',
+    meta_on: str='id',
+) -> pd.DataFrame:
+    return (
+        df
+        .melt(id_vars=id_vars, var_name=var_name)
+        .merge(meta, left_on=df_on, right_on=meta_on)
+    )
+
+
+@st.cache
+def get_subset(
+    df: pd.DataFrame,
+    ids: List[str],
+    col: str='devc'
+) -> pd.DataFrame:
+    return df[df[col].isin(ids)]
+
+
 def display_progress(start: float, cur: float, end: float) -> None:
     try:
         progress = (end - cur) / (end - start)
@@ -141,6 +180,32 @@ def display_ctrl(ctrl_df: pd.DataFrame) -> None:
         chart(graphs.ctrl_graph(changes))
 
 
+def display_devc(
+    devc_df: pd.DataFrame,
+    devc_meta: pd.DataFrame,
+) -> None:
+    if devc_df.empty:
+        return
+
+    groups = devc_groups(devc_meta)
+    melted = melt_and_merge(devc_df, devc_meta)
+
+    for group in groups:
+        if group['make'] == 'null':
+            subheader = group['qty']
+        else:
+            subheader = f"{group['qty']}: {group['make']}"
+
+        st.subheader(subheader)
+
+        subset = get_subset(melted, group['ids'])
+        for level in subset.level.unique():
+            chart(graphs.devc_graph(
+                subset[subset.level == level],
+                group['qty'],
+            ))
+
+
 def main():
     hrr_csv = file_uploader('Upload HRR csv')
     hrr_df = read_csv(hrr_csv)
@@ -161,6 +226,7 @@ def main():
     display_timesteps(timestep_info)
     display_hrr(hrr_df)
     display_ctrl(ctrl_df)
+    display_devc(devc_df, devc_meta)
 
 
 if __name__ == '__main__':

@@ -40,3 +40,14 @@ def ctrl_graph(df: pd.DataFrame) -> alt.Chart:
     ).encode(text='CTRL')
 
     return point + text
+
+
+def devc_graph(df: pd.DataFrame, title: str) -> alt.Chart:
+
+    line = alt.Chart(df).mark_line().encode(
+        x=alt.X('Time:Q', title='Time [sec]'),
+        y=alt.Y('value:Q', title=title),
+        color='devc',
+    )
+
+    return line
