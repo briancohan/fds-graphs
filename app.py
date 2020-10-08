@@ -218,6 +218,7 @@ def main():
     out_txt = ''
     if out_file is not None:
         out_txt = out_file.read()
+        out_txt = out_txt.replace('\r\n', '\n')
 
     t_start, t_current, t_end = parse_times(hrr_df, ctrl_df, devc_df, out_txt)
     timestep_info = parse_timesteps(out_txt)
