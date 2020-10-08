@@ -75,6 +75,7 @@ def parse_devc_meta(out_text: str) -> pd.DataFrame:
     df = pd.DataFrame([i.named for i in devices])
 
     if df.empty or len(df.z.unique()) == 1:
+        df['level'] = 1
         return df
 
     k = st.sidebar.slider(
