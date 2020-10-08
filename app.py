@@ -46,10 +46,10 @@ def parse_times(
             continue
 
     if out_txt:
-        start = parse.search("Simulation Start Time (s) {:>f}\n", out_txt)
-        end = parse.search("Simulation End Time (s) {:>f}\n", out_txt)
-        t_start = float(start.fixed[0])
-        t_end = float(end.fixed[0])
+        start = parse.search("Start Time (s) {:>f}\n", out_txt)
+        end = parse.search("End Time (s) {:>f}\n", out_txt)
+        t_start = float(start[0])
+        t_end = float(end[0])
 
         timesteps = parse_timesteps(out_txt)
         t_cur = max(t_cur, timesteps.time.max())
@@ -148,7 +148,7 @@ def get_subset(
 
 def display_progress(start: float, cur: float, end: float) -> None:
     try:
-        progress = (end - cur) / (end - start)
+        progress = (cur - start) / (end - start)
     except ZeroDivisionError:
         return
     st.write(f'{progress * 100:.1f}% Complete {cur} s / {end} s')
